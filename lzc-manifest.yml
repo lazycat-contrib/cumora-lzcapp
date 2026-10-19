@@ -10,7 +10,6 @@ application:
       # fix_websocket_header keeps the WebSocket upgrade headers canonical.
       backend: http://cumora:5181/
       fix_websocket_header: true
-
 services:
   cumora-db:
     # upstream: pgvector/pgvector:pg16
@@ -30,7 +29,6 @@ services:
       retries: 20
       start_period: 30s
     mem_limit: 512M
-
   cumora-redis:
     # upstream: library/redis:7-alpine
     image: redis:7-alpine
@@ -44,9 +42,8 @@ services:
       timeout: 5s
       retries: 20
     mem_limit: 128M
-
   cumora:
-    # upstream: ghcr.io/dockers-x/cumora:{{ version }}
+    # upstream: ghcr.io/dockers-x/cumora:0.18.7
     image: ghcr.1ms.run/dockers-x/cumora:0.18.7
     depends_on:
       - cumora-db
@@ -79,7 +76,6 @@ services:
       retries: 10
       start_period: 90s
     mem_limit: 2G
-
 usage: |
   Cumora 是一款面向智能体团队的协作聊天应用：网页与服务端已内置，打开即可使用。
   云端智能体需要 Kubernetes 集群，本应用内无法启用；请在自己的电脑上运行
