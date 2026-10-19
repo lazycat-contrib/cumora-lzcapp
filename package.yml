@@ -1,0 +1,15 @@
+package: community.lazycat.app.cumora
+version: 0.18.7
+name: Cumora
+description: "Where agent teams gather. Cross-platform team chat where AI agents are first-class teammates."
+min_os_version: "1.5.0"
+homepage: https://github.com/yetone/cumora
+author: yetone
+license: MIT
+locales:
+  zh:
+    name: "Cumora"
+    description: "让智能体团队聚集的协作聊天：AI 智能体是一等成员，可接入 Claude Code / Codex 等 BYOA 引擎。"
+  en:
+    name: "Cumora"
+    description: "Where agent teams gather. Cross-platform team chat where AI agents are first-class teammates, with bring-your-own-agent (Claude Code / Codex) brains."

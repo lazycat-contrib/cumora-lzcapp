@@ -1,0 +1,5 @@
+*.lpk
+/dist/
+/.lazycat-build/
+/.lazycat-action/
+/.lazycat-release.env

@@ -1,0 +1,43 @@
+version: 1
+
+project:
+  root: .
+  build_config: lzc-build.yml
+  package_file: package.yml
+  output: dist/cumora.lpk
+  target_arch: amd64
+
+update:
+  strategy: publish
+  allow_downgrade: false
+  version_source:
+    type: image
+    image: cumora
+
+build:
+  run_buildscript: false
+
+images:
+  # Version source: upstream release tags (vX.Y.Z), published by us at
+  # ghcr.io/dockers-x/cumora. The version tag is the package version.
+  - id: cumora
+    target: service
+    service: cumora
+    source: ghcr.io/dockers-x/cumora
+    channel: stable
+    sort: semver
+    tag_regex: '^v?\d+\.\d+\.\d+$'
+    delivery:
+      mode: mirror
+      require_digest_match: true
+
+stores:
+  official:
+    # Image delivery is mirror mode, which the official store forbids.
+    # Publish only to Miaomiao / community store.
+    enabled: false
+  private:
+    enabled: true
+    skip_if_version_exists: true
+    name: Cumora
+    summary: "让智能体团队聚集的协作聊天，支持 BYOA（Claude Code / Codex）"

@@ -1,0 +1,87 @@
+application:
+  subdomain: cumora
+  background_task: true
+  multi_instance: false
+  public_path:
+    - /
+  upstreams:
+    - location: /
+      # The server image serves /api/*, /runtime/* and the SPA from one process.
+      # fix_websocket_header keeps the WebSocket upgrade headers canonical.
+      backend: http://cumora:5181/
+      fix_websocket_header: true
+
+services:
+  cumora-db:
+    # upstream: pgvector/pgvector:pg16
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_DB=cumora
+      - POSTGRES_USER=cumora
+      - POSTGRES_PASSWORD={{ stable_secret "db_password" }}
+    binds:
+      - /lzcapp/var/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U cumora -d cumora
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    mem_limit: 512M
+
+  cumora-redis:
+    # upstream: library/redis:7-alpine
+    image: redis:7-alpine
+    command: redis-server --save "" --appendonly no
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    mem_limit: 128M
+
+  cumora:
+    # upstream: ghcr.io/dockers-x/cumora:{{ version }}
+    image: ghcr.1ms.run/dockers-x/cumora:0.18.7
+    depends_on:
+      - cumora-db
+      - cumora-redis
+    environment:
+      - DATABASE_URL=postgres://cumora:{{ stable_secret "db_password" }}@cumora-db:5432/cumora
+      - REDIS_URL=redis://cumora-redis:6379
+      # The image ships NODE_ENV=production, which refuses to boot on the public
+      # dev default for this secret. Generate it once per installation so
+      # runtime JWTs cannot be forged.
+      - AGENT_RUNTIME_SECRET={{ stable_secret "agent_runtime_secret" }}
+      # No Kubernetes cluster here: the server would otherwise shell out to
+      # kubectl to spawn per-agent pods. Cloud agents are therefore off; pair a
+      # BYOA computer (Claude Code / Codex) instead.
+      - ENABLE_AGENT_POD_GC=false
+      - ENABLE_CHROME_PVC_GC=false
+      - ENABLE_CLUSTER_MONITOR=false
+    binds:
+      # Local attachment storage. DATABASE_URL above points at the embedded
+      # Postgres, so no external dependency is required.
+      - /lzcapp/var/uploads:/app/server/uploads
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:5181/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
+    mem_limit: 2G
+
+usage: |
+  Cumora 是一款面向智能体团队的协作聊天应用：网页与服务端已内置，打开即可使用。
+  云端智能体需要 Kubernetes 集群，本应用内无法启用；请在自己的电脑上运行
+  `cumora agent computer`，把本地 Claude Code / Codex 注册为智能体（BYOA 模式）。
+  首次启动时数据库会自动建表，约需半分钟，请稍候再刷新。
