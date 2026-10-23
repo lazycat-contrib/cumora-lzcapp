@@ -43,8 +43,8 @@ services:
       retries: 20
     mem_limit: 128M
   cumora:
-    # upstream: ghcr.io/dockers-x/cumora:0.18.7
-    image: ghcr.1ms.run/dockers-x/cumora:0.18.7
+    # upstream: ghcr.io/dockers-x/cumora:0.18.8
+    image: ghcr.1ms.run/dockers-x/cumora:0.18.8
     depends_on:
       - cumora-db
       - cumora-redis
